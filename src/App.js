@@ -1,25 +1,68 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useState, useEffect} from 'react';
+import {locationContext} from './context'
 import './App.css';
+import Header from './components/header/Header';
+import MainContent from './components/content/MainContent';
 
 function App() {
+
+   const [locations, setLocations] = useState([]);
+
+
+    useEffect(() => {
+        asyncFetch();
+
+        async function asyncFetch(){
+            try {
+                const response = await fetch("https://rcslabs.ru/locations.json");
+                const data = await response.json();
+                const results = addPropsChildren(data);
+                const listTree = list_to_tree(results);
+                setLocations(listTree)
+                console.log("list_tree:", listTree);
+            } catch(err) {
+                console.log(err.message);
+            }
+        }
+
+        function addPropsChildren(data) {
+            const addProps = data.map(item => {
+                return {
+                    ...item,
+                    children: []
+                }
+            });
+            return addProps;
+        }
+
+        function list_to_tree(list) {
+            var map = {}, node, roots = [], i;
+
+            for (i = 0; i < list.length; i += 1) {
+                map[list[i].id] = i;
+                list[i].children = [];
+            }
+
+            for (i = 0; i < list.length; i += 1) {
+                node = list[i];
+                if (node.parent_id !== null) {
+                    list[map[node.parent_id]].children.push(node);
+                } else {
+                    roots.push(node);
+                }
+            }
+            return roots;
+        }
+
+    },[]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <locationContext.Provider value={locations}>  
+        <div className="wrapper">
+            <Header/>
+            <MainContent/>
+        </div>
+    </locationContext.Provider>    
   );
 }
 
