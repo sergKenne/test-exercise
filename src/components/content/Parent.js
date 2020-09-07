@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState} from 'react'
 import{locationContext} from '../../context';
 import Cart from './Cart'
 import ParentChildren from './ParentChildren';
